@@ -425,8 +425,15 @@ class Main():
 
                 
     def ai_vs_aiMode(self,pos):
+   
+        boardToNumber = {                         'b0': 0, 
+                  'a1': 1 , 'b1': 2 , 'c1': 3 , 'd1': 4 , 'e1': 5 , 'f1': 6 , 
+                  'a2': 7 , 'b2': 8 , 'c2': 9 , 'd2': 10, 'e2': 11, 'f2': 12,
+                  'a3': 13, 'b3': 14, 'c3': 15, 'd3': 16, 'e3': 17, 'f3': 18,
+                            'b4': 19, 'c4': 20, 'd4': 21, 'e4': 22
+        }
 
-       if self.turn == False:
+        if self.turn == False:
             emptyPos = emptyPositions(Board().boardPositions)
             goats = goatPositions(Board().boardPositions)
 
@@ -439,6 +446,9 @@ class Main():
                     else:
                         return
 
+                print("DEBUG A: ",goats)
+                #for x in goats:
+                
                 #Loop through all goats
                 #Loop through all possible moves
                 #Dictionary {goat#: move location}
@@ -464,12 +474,25 @@ class Main():
                     self.location = ''
                     self.turn = False
             else:
+                #Given every empty position
+                ogmatrix = Board().boardToMatrix()
+                cost_array = []
+                for x in emptyPos:
+                    mat2 = ogmatrix.copy()
+                    mat2[boardToNumber[x]] = [0, 1, 0] 
+                    cost_array.append(Goat.testCostFunction(mat2))
+                    #print("DEBUG B:\n",Goat.testCostFunction(mat2))
+                    #cost_array.append(Goat.costFunctionoftwoPositions(Goat.TwoPositions(ogmatrix),Goat.TwoPositions(mat2)))
+                print(cost_array)
+                #get matrices
+                #print("DEBUG ABC:\n",Goat.TwoPositions(ogmatrix))
+                
                 goatChoice = choice(emptyPos)
                 Goat(goatChoice).place()
                 self.move = False
                 self.turn = True
 
-       if self.turn == True:
+        if self.turn == True:
             numTigers = 3
             possibleCaptures = {}
             tigers = tigerPositions(Board().boardPositions)

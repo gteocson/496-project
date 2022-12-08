@@ -7,6 +7,7 @@ __author__ = "Clyde James Felix"
 __email__ = "cjfelix.hawaii.edu"
 __status__ = "Dev"
 
+import numpy as np
 import sys
 import time
 class Board:
@@ -50,21 +51,34 @@ class Board:
         'f1': self.f[1],'f2': self.f[2],'f3': self.f[3]}
 
     def boardToMatrix(self):
-        boardToNumber = {                         'b0': 1, 
-                  'a1': 2 , 'b1': 3 , 'c1': 4 , 'd1': 5 , 'e1': 6 , 'f1': 7 , 
-                  'a2': 8 , 'b2': 9 , 'c2': 10, 'd2': 11, 'e2': 12, 'f2': 13,
-                  'a3': 14, 'b3': 15, 'c3': 16, 'd3': 17, 'e3': 18, 'f3': 19,
-                            'b4': 20, 'c4': 21, 'd4': 22, 'e4': 23
+        boardToNumber = {                         'b0': 0, 
+                  'a1': 1 , 'b1': 2 , 'c1': 3 , 'd1': 4 , 'e1': 5 , 'f1': 6 , 
+                  'a2': 7 , 'b2': 8 , 'c2': 9 , 'd2': 10, 'e2': 11, 'f2': 12,
+                  'a3': 13, 'b3': 14, 'c3': 15, 'd3': 16, 'e3': 17, 'f3': 18,
+                            'b4': 19, 'c4': 20, 'd4': 21, 'e4': 22
                  }
+
         
+        orderedBoard = np.empty((23,3))
+  
+
         for key in boardToNumber:
-            orderedBoard[boardToNumber[key]] = self.boardPosition[key]
+            #print(key,self.boardPositions[key],boardToNumber[key])
+            if str(self.boardPositions[key]) == "()":
+                orderedBoard[boardToNumber[key]] = [0, 0, 1]
+            elif str(self.boardPositions[key]) == "X" :
+                orderedBoard[boardToNumber[key]] = [1, 0, 0]
+            elif str(self.boardPositions[key]) == "O":
+                orderedBoard[boardToNumber[key]] = [0, 1, 0]    
+            #    orderedBoard[boardToNumber[key]] = self.boardPositions[key]
         
-        convert = {"X": [1, 0, 0],
-        "O": [0, 1, 0],
-        "()": [0, 0, 1]}
-        
-        return convert[orderedBoard]
+        #print(orderedBoard)
+        #convert = {"X": [1, 0, 0],
+        #"O": [0, 1, 0],
+        #"()": [0, 0, 1]}
+        #print(orderedBoard)  
+        #return 1
+        return orderedBoard
         
     def clearBoard(self):
         a = { 1:(), 2:(),3:() }
@@ -220,10 +234,10 @@ class Position(Board):
             # neighbor_neighbors = Position(neighbors[0],neighbors[1]).get_neighbors()
             if Position(neighbors[0],neighbors[1]).content() == 'O':
                 neighbor_neighbors = Piece(self.location).secondAdjacent(neighbors)
-                # print('DEBUG: neighbor_neighbors',neighbor_neighbors)
+                #print('DEBUG: neighbor_neighbors',neighbor_neighbors)
                 if neighbor_neighbors != None:
                     if Position(neighbor_neighbors[0],neighbor_neighbors[1]).content() == ():
-                        captures.append(neighbor_neighbors)
+                        captures.append(neighbor_neighbors)              
         if len(captures) == 0:
             return None
         else:    
@@ -323,7 +337,7 @@ class Piece(Board):
             if positions[i] in ['c0','d0','e0'] and Position(positions[i][0],positions[i][1]).content() == ():
                 ans.append('b0')
             if positions[i] not in ['c0','d0','e0'] and Position(positions[i][0],positions[i][1]).content() == ():
-                ans.append(positions[i])
+                ans.append(positions[i])    
         if captures != None :
             for i in captures:
                 ans1.append(i)
@@ -349,7 +363,11 @@ class Piece(Board):
         return originalMatrix, matrix
             
             #Return 2 matrices for cost function
-            
+
+    def potential_place(self):
+        matrix = self.boardToMatrix()
+        originalMatrix = matrix.copy()
+
     #def fullCostFunction(self):
     #psuedo code
     #For x in possibleMoves(self):
@@ -364,8 +382,49 @@ class Piece(Board):
         else:
             print ('Shape of A', x.shape,'!=', y.shape,'.')
             print('\nPlease check sizes and try again.')
-    
+
+    def costFunctionoftwoPositions(m, c):
+        costcount = 0 
+        for i in range(0,23):
+            for v in range(0,23):
+            #locate which position of our parameters needed to be used - WHERE IS THE 1 PLACED?
+                cost = m[i,v,:,:]*c
+                cost = np.sum(cost)
+                costcount= costcount+cost
+        return costcount 
     ###
+
+    def testCostFunction(Matr):
+        adj_list1 = [0,0,0,0,1,2,3,4,5,1,2,3,4,5,6,7,8,9,10,11,7,8,9,10,11,12,13,14,15,16,17,14,15,16,17,19,20,21]
+        adj_list2 = [2,3,4,5,2,3,4,5,6,7,8,9,10,11,12,8,9,10,11,12,13,14,15,16,17,18,14,15,16,17,18,19,20,21,22,20,21,22]
+
+        Matr = Matr.reshape(23,3,1,1)
+        MatrT = np.transpose(Matr)
+
+        Matr = Matr*MatrT
+
+        T = [1,0,0]
+        G = [0,1,0]
+        E = [0,0,1]
+
+        cost = 0
+
+        #print((Matr[adj_list1[0],:,:,adj_list2[0]]==np.outer(T,E)).all())
+        #print(np.outer(T,T))
+
+        for x in range(0,37):
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(T,T)).all()):
+                cost += 3
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(G,G)).all()):
+                cost += 1
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(G,E)).all()):
+                cost += 2
+        
+        return cost
+                #print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+            
+
+
     def TwoPositions(StateofBoardM):
     
         A = StateofBoardM.reshape(23,3)
@@ -389,6 +448,9 @@ class Piece(Board):
         cost2=m*c
 
         return cost2
+
+
+
     #COPIED OVER
     
     
