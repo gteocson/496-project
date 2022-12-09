@@ -438,15 +438,15 @@ class Main():
             goats = goatPositions(Board().boardPositions)
 
             if self.goatCount == 15:
-                goatPos = choice(goats)
+                #goatPos = choice(goats)
 
-                while len(Goat(goatPos).possibleMoves()) == 0:
-                    if len(goats) != 0:
-                        goats.remove(goatPos)
-                    else:
-                        return
+                #while len(Goat(goatPos).possibleMoves()) == 0:
+                #    if len(goats) != 0:
+                #        goats.remove(goatPos)
+                #    else:
+                #        return
 
-                print("DEBUG A: ",goats)
+                #print("DEBUG A: ",goats)
                 #for x in goats:
                 
                 #Loop through all goats
@@ -454,40 +454,66 @@ class Main():
                 #Dictionary {goat#: move location}
                 #iterating through the dictionary
                 #get matrices
-                goatChoice = choice(Goat(goatPos).possibleMoves())
 
-                if pos in goatPos:
-                    del goatChoice[goatChoice.index(pos)]
 
-                if goatChoice in Position(goatPos[0],goatPos[1]).get_neighbors():
-                    goatMoveFlag = Goat(goatPos).move(goatChoice) 
+                costArrayOut = {}
+                
+                
+                minV = {}
+                minV['goatLoc'] = -1
+                minV['minVal'] = 10000000000
+                minV['moveLoc'] = -1
+                potentialMoveMat = Board().boardToMatrix()
+                
+                for x in goats:
+                    costArrayOut[x] = {}
+                    if len(x) != 0:
+                        for y in Goat(x).possibleMoves():
+                            costArrayOut[x][y] = Goat.potential_move(potentialMoveMat,boardToNumber[x],boardToNumber[y]) 
+                            if len(minV) == 0 or minV['minVal'] > costArrayOut[x][y]:                  
+                                minV['goatLoc'] = x
+                                minV['moveLoc'] = y
+                                minV['minVal'] = costArrayOut[x][y]   
 
-                    if goatMoveFlag == 1:
-                        self.move = False
-                        self.turn = True
-                        self.moveCount = self.moveCount + 1
-                        return
+                            #print("DEBUG BBBBBB\n")
+                        #costArrayOut.clear()
+                        #costArrayIn[x][min(costArrayOut, key=costArrayOut.get)] = min(costArrayOut)
+                        
+                print(minV)
+                #goatChoice = choice(Goat(goatPos).possibleMoves())
 
-                else:
-                    print('Error')
-                    self.move = False
-                    self.location = ''
-                    self.turn = False
+                #if pos in goatPos:
+                #    del goatChoice[goatChoice.index(pos)]
+
+                #if goatChoice in Position(goatPos[0],goatPos[1]).get_neighbors():
+                goatMoveFlag = Goat(minV['goatLoc']).move(minV['moveLoc']) 
+
+                    #if goatMoveFlag == 1:
+                self.move = False
+                self.turn = True
+                self.moveCount = self.moveCount + 1
+                return
+
+                #else:
+                #    print('Error')
+                #    self.move = False
+                #    self.location = ''
+                #    self.turn = False
             else:
                 #Given every empty position
                 ogmatrix = Board().boardToMatrix()
-                cost_array = []
+                cost_array = {}
                 for x in emptyPos:
                     mat2 = ogmatrix.copy()
                     mat2[boardToNumber[x]] = [0, 1, 0] 
-                    cost_array.append(Goat.testCostFunction(mat2))
+                    cost_array[x] = Goat.testCostFunction(mat2)
+                    #cost_array.append(Goat.testCostFunction(mat2))
                     #print("DEBUG B:\n",Goat.testCostFunction(mat2))
                     #cost_array.append(Goat.costFunctionoftwoPositions(Goat.TwoPositions(ogmatrix),Goat.TwoPositions(mat2)))
-                print(cost_array)
+                #print(cost_array)
                 #get matrices
                 #print("DEBUG ABC:\n",Goat.TwoPositions(ogmatrix))
-                
-                goatChoice = choice(emptyPos)
+                goatChoice = min(cost_array, key=cost_array.get)
                 Goat(goatChoice).place()
                 self.move = False
                 self.turn = True

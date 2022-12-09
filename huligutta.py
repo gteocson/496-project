@@ -347,9 +347,15 @@ class Piece(Board):
         print('test2: ',list(set(ans)),list(set(ans1)))
         return list(set(ans)), list(set(ans1)) #Separate 
 
-    def potential_move(self, newposition):
-        matrix = self.boardToMatrix()
-        originalMatrix = matrix.copy()
+    def potential_move(matrix, goatPos, movePos):
+        
+
+        #print("POTENTIAL MOVE TEST\n")
+        #print(matrix)
+
+        matrix[[goatPos, movePos]] = matrix[[movePos, goatPos]]
+        #print(matrix)
+        return Goat.testCostFunction(matrix)
         #if Position(self.position[0],self.position[1]).content() == 'X' and Position(newposition[0],newposition[1]).content() == ():
         #    matrix[newposition[0],newposition[1]] = ('X')
         #    matrix(self.position[0],self.position[1]).place(())
@@ -360,7 +366,7 @@ class Piece(Board):
         #return potential_move matrices into cost_function
         #depending on 
 
-        return originalMatrix, matrix
+        #return originalMatrix, matrix
             
             #Return 2 matrices for cost function
 
@@ -413,13 +419,19 @@ class Piece(Board):
         #print(np.outer(T,T))
 
         for x in range(0,37):
-            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(T,T)).all()):
-                cost += 3
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(T,G)).all()):
+                cost += 10
             if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(G,G)).all()):
                 cost += 1
             if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(G,E)).all()):
-                cost += 2
-        
+                cost += 4
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(E,E)).all()):
+                cost += 1
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(T,T)).all()):
+                cost += 0
+            if((Matr[adj_list1[x],:,:,adj_list2[x]] == np.outer(T,E)).all()):
+                cost += 3
+
         return cost
                 #print("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
             
